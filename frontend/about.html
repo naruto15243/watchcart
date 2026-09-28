@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | About</title>
+    <style>
+      :root { --bg: #07111f; --panel: rgba(13, 28, 49, 0.9); --border: rgba(255,255,255,0.08); --text:#edf4ff; --muted:#a9bdd8; --primary:#7c8cff; --primary-2:#48c2ff; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, sans-serif; background: linear-gradient(135deg, #07111f 0%, #0d1c31 48%, #0b1527 100%); color: var(--text); }
+      a { color: inherit; text-decoration: none; }
+      .shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:20px; }
+      .brand { display:flex; align-items:center; gap:12px; font-weight:700; }
+      .brand-mark { width:36px; height:36px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); }
+      .nav { display:flex; gap:18px; flex-wrap:wrap; color: var(--muted); }
+      .nav a.active { color: var(--text); }
+      .page { padding-top:28px; max-width: 900px; }
+      .card { background: var(--panel); border:1px solid var(--border); border-radius:24px; padding:28px; box-shadow: 0 18px 40px rgba(3,8,17,0.25); }
+      h1 { margin-top:0; }
+      p { color: var(--muted); line-height: 1.7; }
+      .stats { display:grid; grid-template-columns: repeat(3, minmax(140px,1fr)); gap:16px; margin-top:22px; }
+      .stat { background: rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:14px; padding:18px; }
+      @media (max-width:768px){ .topbar { display:grid; grid-template-columns:1fr; gap:12px; } .stats { grid-template-columns:1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><div class="brand-mark">W</div><span>WatchCart</span></div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="about.html" class="active">About</a>
+          <a href="stores.html">Stores</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="card">
+          <h1>About WatchCart</h1>
+          <p>WatchCart is a modern lifestyle shopping experience designed to help customers discover products, compare options, manage carts, and complete orders in a single, simple flow. Our focus is on speed, clarity, and trust for everyday digital shopping.</p>
+          <p>We bring together product discovery, order tracking, secure checkout, and customer account management into one smooth storefront experience.</p>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>5k+</strong>
+              <div>Happy shoppers</div>
+            </div>
+            <div class="stat">
+              <strong>120+</strong>
+              <div>Products</div>
+            </div>
+            <div class="stat">
+              <strong>24/7</strong>
+              <div>Support</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Search</title>
+    <style>
+      :root { --bg: #07111f; --panel: rgba(13, 28, 49, 0.9); --border: rgba(255,255,255,0.08); --text:#edf4ff; --muted:#a9bdd8; --primary:#7c8cff; --primary-2:#48c2ff; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, sans-serif; background: linear-gradient(135deg, #07111f 0%, #0d1c31 48%, #0b1527 100%); color: var(--text); }
+      a { color: inherit; text-decoration: none; }
+      .shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:20px; }
+      .brand { display:flex; align-items:center; gap:12px; font-weight:700; }
+      .brand-mark { width:36px; height:36px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); }
+      .nav { display:flex; gap:18px; flex-wrap:wrap; color: var(--muted); }
+      .nav a.active { color: var(--text); }
+      .page { padding-top:28px; }
+      .search-box { display:flex; gap:10px; margin-bottom:24px; }
+      .search-box input { flex:1; padding:14px 16px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); }
+      .primary { border:none; border-radius:12px; padding:14px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; font-weight:700; }
+      .result-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:18px; }
+      .card { background: var(--panel); border:1px solid var(--border); border-radius:20px; padding:18px; }
+      .card h3 { margin-top:0; }
+      .meta { color: var(--muted); margin: 8px 0; }
+      .price { color: var(--primary-2); font-weight:700; }
+      @media (max-width:768px){ .topbar{display:grid; grid-template-columns:1fr; gap:12px;} .search-box{flex-direction:column;} }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><div class="brand-mark">W</div><span>WatchCart</span></div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="search.html" class="active">Search</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+          <a href="payment.html">Payment</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <div class="search-box">
+          <input type="text" value="headphone" />
+          <button class="primary" type="button">Search</button>
+        </div>
+
+        <h2>Search results</h2>
+        <div class="result-grid">
+          <article class="card">
+            <h3>Noise Master Headphones</h3>
+            <div class="meta">Electronics • 4.7★</div>
+            <div class="price">₹2,999</div>
+          </article>
+          <article class="card">
+            <h3>Portable Bluetooth Speaker</h3>
+            <div class="meta">Audio • 4.6★</div>
+            <div class="price">₹1,999</div>
+          </article>
+          <article class="card">
+            <h3>Gaming Headset Pro</h3>
+            <div class="meta">Accessories • 4.8★</div>
+            <div class="price">₹3,499</div>
+          </article>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

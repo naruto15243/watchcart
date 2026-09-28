@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Orders</title>
+    <style>
+      :root {
+        --bg: #081521;
+        --bg-soft: #0f1f31;
+        --panel: rgba(16, 35, 55, 0.9);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #edf6ff;
+        --muted: #afd0ee;
+        --primary: #7c8cff;
+        --primary-2: #49c6ff;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { font-family: Inter, system-ui, -apple-system, sans-serif; background: radial-gradient(circle at top, rgba(89, 113, 255, 0.18), transparent 25%), linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%); color: var(--text); }
+      a { text-decoration: none; color: inherit; }
+      .site-shell { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+      .brand-wrap { display:flex; align-items:center; gap:12px; font-weight:800; }
+      .brand-mark { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow:0 10px 30px rgba(72,198,255,0.35); }
+      .nav-links { display:flex; gap:18px; flex-wrap:wrap; }
+      .nav-links a { color: var(--muted); font-weight:600; }
+      .nav-links a.active { color: var(--text); }
+      .page-content { padding-top:28px; }
+      .page-panel, .order-item { background: linear-gradient(180deg, rgba(16,35,55,0.9), rgba(14,28,45,0.85)); border:1px solid var(--border); border-radius:22px; box-shadow:0 15px 35px rgba(0,0,0,0.18); }
+      .page-panel { padding:24px; }
+      .order-list { display:grid; gap:16px; }
+      .order-item { padding:18px; }
+      .order-top, .row { display:flex; justify-content:space-between; gap:12px; }
+      .row { margin-top:12px; }
+      .order-badge { display:inline-block; background: rgba(72, 194, 255, 0.12); color: var(--primary-2); border-radius:999px; padding:6px 10px; font-size:0.75rem; }
+      @media (max-width:768px) { .topbar { display:grid; grid-template-columns:1fr; gap:12px; } }
+    </style>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">W</div>
+          <span>WatchCart</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html" class="active">Orders</a>
+          <a href="payment.html">Payment</a>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        <section class="page-panel">
+          <div class="section-head">
+            <h2>Order history</h2>
+          </div>
+          <div class="order-list" id="orderList"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:5000/api';
+      const formatCurrency = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0);
+
+      async function loadOrders() {
+        const token = localStorage.getItem('watchcart_token');
+        if (!token) {
+          document.getElementById('orderList').innerHTML = '<div class="order-item"><p>Please login to view your orders.</p></div>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/orders`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const result = await response.json();
+          const orders = result.data || [];
+
+          if (!orders.length) {
+            document.getElementById('orderList').innerHTML = '<div class="order-item"><p>No orders yet.</p></div>';
+            return;
+          }
+
+          document.getElementById('orderList').innerHTML = orders.map((order) => `
+            <article class="order-item">
+              <div class="order-top">
+                <div>
+                  <h3>${order._id}</h3>
+                  <p>${(order.items || []).map((item) => `${item.name} x${item.quantity}`).join(', ') || 'Order items'}</p>
+                </div>
+                <strong>${formatCurrency(order.totalAmount || order.total || 0)}</strong>
+              </div>
+              <div class="row">
+                <span class="order-badge">${order.paymentMethod || 'Cash on Delivery'}</span>
+                <span class="order-badge">${order.orderStatus || 'Pending'}</span>
+              </div>
+            </article>
+          `).join('');
+        } catch (error) {
+          document.getElementById('orderList').innerHTML = '<div class="order-item"><p>Unable to load orders right now.</p></div>';
+        }
+      }
+
+      loadOrders();
+    </script>
+  </body>
+</html>

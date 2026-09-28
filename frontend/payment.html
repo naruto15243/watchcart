@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Payment</title>
+    <style>
+      :root {
+        --bg: #081521;
+        --bg-soft: #0f1f31;
+        --panel: rgba(16, 35, 55, 0.9);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #edf6ff;
+        --muted: #afd0ee;
+        --primary: #7c8cff;
+        --primary-2: #49c6ff;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body { font-family: Inter, system-ui, -apple-system, sans-serif; background: radial-gradient(circle at top, rgba(89, 113, 255, 0.18), transparent 25%), linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%); color: var(--text); }
+      a { text-decoration: none; color: inherit; }
+      .site-shell { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+      .brand-wrap { display:flex; align-items:center; gap:12px; font-weight:800; }
+      .brand-mark { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow:0 10px 30px rgba(72,198,255,0.35); }
+      .nav-links { display:flex; gap:18px; flex-wrap:wrap; }
+      .nav-links a { color: var(--muted); font-weight:600; }
+      .nav-links a.active { color: var(--text); }
+      .page-content { padding-top:28px; }
+      .page-panel, .summary-box, .form-box { background: linear-gradient(180deg, rgba(16,35,55,0.9), rgba(14,28,45,0.85)); border:1px solid var(--border); border-radius:22px; box-shadow:0 15px 35px rgba(0,0,0,0.18); }
+      .page-panel { padding:24px; display:grid; grid-template-columns:1.3fr 0.7fr; gap:24px; }
+      .form-box, .summary-box { padding:22px; }
+      .primary-btn { width:100%; display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:0.9rem 1.2rem; font-weight:700; border:none; background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:white; }
+      .row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+      .row.total { border-bottom:none; font-size:1.05rem; }
+      label { display:block; margin-bottom:18px; }
+      label span { display:block; margin-bottom:8px; }
+      textarea, select { width:100%; background: rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; color: var(--text); padding:14px 16px; }
+      @media (max-width:768px) { .topbar { display:grid; grid-template-columns:1fr; gap:12px; } .page-panel { grid-template-columns:1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">W</div>
+          <span>WatchCart</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+          <a href="payment.html" class="active">Payment</a>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        <section class="page-panel">
+          <div class="form-box">
+            <h2>Payment details</h2>
+            <form id="paymentForm">
+              <label>
+                <span>Delivery address</span>
+                <textarea id="address" rows="4">123 Main Street, Bengaluru</textarea>
+              </label>
+              <label>
+                <span>Payment method</span>
+                <select id="method">
+                  <option>UPI</option>
+                  <option>Card</option>
+                  <option>Wallet</option>
+                  <option>Cash on Delivery</option>
+                </select>
+              </label>
+              <button class="primary-btn" type="submit">Pay ₹13146</button>
+            </form>
+          </div>
+
+          <aside class="summary-box">
+            <h3>Payment summary</h3>
+            <div class="row"><span>Items</span><strong>3</strong></div>
+            <div class="row"><span>Subtotal</span><strong>₹12997</strong></div>
+            <div class="row"><span>Delivery</span><strong>₹149</strong></div>
+            <div class="row total"><span>Total</span><strong>₹13146</strong></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:5000/api';
+
+      async function loadCartSummary() {
+        const token = localStorage.getItem('watchcart_token');
+        if (!token) {
+          alert('Please login before making payment.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/cart`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const result = await response.json();
+          const cart = result.data || { subtotal: 0, deliveryCharge: 0, total: 0, items: [] };
+          document.querySelector('.summary-box .row:nth-child(2) strong').textContent = `₹${(cart.subtotal || 0).toLocaleString('en-IN')}`;
+          document.querySelector('.summary-box .row:nth-child(3) strong').textContent = `₹${(cart.deliveryCharge || 0).toLocaleString('en-IN')}`;
+          document.querySelector('.summary-box .row.total strong').textContent = `₹${(cart.total || 0).toLocaleString('en-IN')}`;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      document.getElementById('paymentForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const token = localStorage.getItem('watchcart_token');
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const address = document.getElementById('address').value;
+        const method = document.getElementById('method').value;
+
+        try {
+          const response = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ deliveryAddress: address, paymentMethod: method })
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            alert('Payment successful using ' + method + ' for ' + address);
+            window.location.href = 'orders.html';
+            return;
+          }
+
+          alert(result.message || 'Payment failed.');
+        } catch (error) {
+          alert('Unable to process payment right now.');
+        }
+      });
+
+      loadCartSummary();
+    </script>
+  </body>
+</html>

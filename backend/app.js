@@ -1,6 +1,6 @@
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
+const dotenv = require('dotenv');
 const { connectDB } = require('./config/db');
 const healthRoutes = require('./routes/healthRoutes');
 const seedRoutes = require('./routes/seedRoutes');
@@ -22,7 +22,6 @@ const recommendationRoutes = require('./routes/recommendationRoutes');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
@@ -61,6 +60,4 @@ app.use((err, req, res, next) => {
 
 connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;

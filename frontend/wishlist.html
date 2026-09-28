@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Wishlist</title>
+    <style>
+      :root { --bg: #07111f; --panel: rgba(13, 28, 49, 0.9); --border: rgba(255,255,255,0.08); --text:#edf4ff; --muted:#a9bdd8; --primary:#7c8cff; --primary-2:#48c2ff; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, sans-serif; background: linear-gradient(135deg, #07111f 0%, #0d1c31 48%, #0b1527 100%); color: var(--text); }
+      a { color: inherit; text-decoration: none; }
+      .shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:20px; }
+      .brand { display:flex; align-items:center; gap:12px; font-weight:700; }
+      .brand-mark { width:36px; height:36px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); }
+      .nav { display:flex; gap:18px; flex-wrap:wrap; color: var(--muted); }
+      .nav a.active { color: var(--text); }
+      .page { padding-top:28px; }
+      .list { display:grid; gap:18px; }
+      .item { display:flex; justify-content:space-between; align-items:center; gap:20px; background: var(--panel); border:1px solid var(--border); border-radius:20px; padding:18px; }
+      .item strong { font-size:1.1rem; }
+      .tag { background: rgba(72, 194, 255, 0.12); color: var(--primary-2); border-radius:999px; padding:6px 10px; font-size:0.72rem; }
+      @media (max-width:768px){ .topbar { display:grid; grid-template-columns:1fr; gap:12px; } .item { flex-direction:column; align-items:flex-start; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><div class="brand-mark">W</div><span>WatchCart</span></div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+          <a href="payment.html">Payment</a>
+          <a href="wishlist.html" class="active">Wishlist</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <h2>My wishlist</h2>
+        <div class="list">
+          <div class="item"><div><strong>Noise Master Headphones</strong><div class="tag">Electronics</div></div><strong>₹2,999</strong></div>
+          <div class="item"><div><strong>Smart Fitness Watch</strong><div class="tag">Wearables</div></div><strong>₹4,999</strong></div>
+          <div class="item"><div><strong>Acer Swift Laptop</strong><div class="tag">Computers</div></div><strong>₹57,999</strong></div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

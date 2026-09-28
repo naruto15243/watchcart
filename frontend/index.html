@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Home</title>
+    <style>
+      :root {
+        --bg: #081521;
+        --bg-soft: #0f1f31;
+        --panel: rgba(16, 35, 55, 0.9);
+        --panel-soft: rgba(21, 43, 66, 0.85);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #edf6ff;
+        --muted: #afd0ee;
+        --primary: #7c8cff;
+        --primary-2: #49c6ff;
+        --success: #39d69c;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: radial-gradient(circle at top, rgba(89, 113, 255, 0.18), transparent 25%), linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%);
+        color: var(--text);
+      }
+      a { text-decoration: none; color: inherit; }
+      .site-shell { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+      .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 16px;
+        padding-bottom: 20px; border-bottom: 1px solid var(--border);
+      }
+      .brand-wrap { display: flex; align-items: center; gap: 12px; font-weight: 800; }
+      .brand-mark {
+        width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        box-shadow: 0 10px 30px rgba(72, 198, 255, 0.35);
+      }
+      .nav-links { display: flex; gap: 18px; flex-wrap: wrap; }
+      .nav-links a { color: var(--muted); font-weight: 600; }
+      .nav-links a.active { color: var(--text); }
+      .page-content { padding-top: 30px; }
+      .hero-box, .page-panel, .product-card, .summary-box, .form-box, .order-item, .cart-item {
+        background: linear-gradient(180deg, rgba(16,35,55,0.9), rgba(14,28,45,0.85));
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+      }
+      .hero-box { padding: 32px; margin-bottom: 24px; }
+      .eyebrow {
+        margin: 0 0 8px; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--primary-2); font-weight: 700;
+      }
+      h1, h2, h3, p { margin-top: 0; }
+      .subtitle { color: var(--muted); max-width: 640px; line-height: 1.7; }
+      .button-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+      .primary-btn, .secondary-btn {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 0.9rem 1.2rem; border-radius: 999px; font-weight: 700;
+      }
+      .primary-btn {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: white;
+      }
+      .secondary-btn {
+        background: rgba(255,255,255,0.04); color: var(--text);
+        border: 1px solid var(--border);
+      }
+      .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+      .product-card { overflow: hidden; padding-bottom: 0; }
+      .product-card img { width: 100%; height: 180px; object-fit: cover; }
+      .product-body { padding: 18px; }
+      .product-meta { display: flex; justify-content: space-between; gap: 8px; color: var(--primary-2); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+      .product-body p { color: var(--muted); line-height: 1.6; }
+      .product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; font-weight: 700; }
+      @media (max-width: 768px) {
+        .topbar { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .nav-links { justify-content: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">W</div>
+          <span>WatchCart</span>
+        </div>
+        <nav class="nav-links">
+          <a href="index.html" class="active">Home</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+          <a href="payment.html">Payment</a>
+        </nav>
+      </header>
+
+      <main class="page-content">
+        <section class="hero-box">
+          <p class="eyebrow">Smart lifestyle platform</p>
+          <h1>Shop smarter, watch better, and order faster.</h1>
+          <p class="subtitle">Compare products, track orders, and complete payment in one place.</p>
+          <div class="button-row">
+            <a class="primary-btn" href="cart.html">View cart</a>
+            <a class="secondary-btn" href="orders.html">Orders</a>
+          </div>
+        </section>
+
+        <section class="page-panel">
+          <div class="section-head">
+            <h2>Featured products</h2>
+          </div>
+          <div class="product-grid" id="productGrid"></div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:5000/api';
+      const formatCurrency = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0);
+
+      async function loadProducts() {
+        try {
+          const response = await fetch(`${API_BASE}/products`);
+          const result = await response.json();
+          const products = result.data || [];
+
+          document.getElementById('productGrid').innerHTML = products.slice(0, 6).map((product) => `
+            <article class="product-card">
+              <img src="${product.image || 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=800&q=80'}" alt="${product.name}" />
+              <div class="product-body">
+                <div class="product-meta"><span>${product.category || 'General'}</span><span>${product.brand || 'WatchCart'}</span></div>
+                <h3>${product.name}</h3>
+                <p>${product.description || 'Premium quality and reliable performance for everyday use.'}</p>
+                <div class="product-footer"><strong>${Number(product.rating || 4.5).toFixed(1)} ★</strong><span>${formatCurrency(product.price)}</span></div>
+              </div>
+            </article>
+          `).join('');
+        } catch (error) {
+          document.getElementById('productGrid').innerHTML = '<p>Unable to load products right now.</p>';
+        }
+      }
+
+      loadProducts();
+    </script>
+  </body>
+</html>

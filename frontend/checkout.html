@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WatchCart | Checkout</title>
+    <style>
+      :root {
+        --bg: #081521;
+        --bg-soft: #0f1f31;
+        --panel: rgba(16, 35, 55, 0.9);
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #edf6ff;
+        --muted: #afd0ee;
+        --primary: #7c8cff;
+        --primary-2: #49c6ff;
+      }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family: Inter, system-ui, sans-serif; background: radial-gradient(circle at top, rgba(89, 113, 255, 0.18), transparent 25%), linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 100%); color: var(--text); }
+      a { color: inherit; text-decoration: none; }
+      .shell { max-width: 1200px; margin: 0 auto; padding: 28px 20px 60px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); padding-bottom:20px; }
+      .brand { display:flex; align-items:center; gap:12px; font-weight:800; }
+      .brand-mark { width:38px; height:38px; border-radius:12px; display:grid; place-items:center; background:linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow:0 10px 30px rgba(72,198,255,0.35); }
+      .nav { display:flex; gap:18px; flex-wrap:wrap; color: var(--muted); }
+      .nav a.active { color: var(--text); }
+      .page { padding-top:28px; display:grid; grid-template-columns: 1.2fr 0.8fr; gap:24px; }
+      .panel { background: linear-gradient(180deg, rgba(16,35,55,0.9), rgba(14,28,45,0.85)); border:1px solid var(--border); border-radius:22px; padding:22px; box-shadow: 0 15px 35px rgba(0,0,0,0.18); }
+      .row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+      label { display:block; margin-bottom:16px; }
+      label span { display:block; margin-bottom:8px; }
+      textarea, input, select { width:100%; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.02); color: var(--text); }
+      .btn { width:100%; border:none; border-radius:999px; padding:0.9rem 1.2rem; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; font-weight:700; }
+      @media (max-width:768px){ .topbar { display:grid; grid-template-columns:1fr; gap:12px; } .page { grid-template-columns:1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand"><div class="brand-mark">W</div><span>WatchCart</span></div>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="products.html">Products</a>
+          <a href="cart.html">Cart</a>
+          <a href="orders.html">Orders</a>
+          <a href="payment.html">Payment</a>
+          <a href="checkout.html" class="active">Checkout</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="panel">
+          <h2>Shipping details</h2>
+          <form id="checkoutForm">
+            <label><span>Full name</span><input type="text" value="Alex Morgan" /></label>
+            <label><span>Address</span><textarea rows="3">123 Main Street, Bengaluru</textarea></label>
+            <label><span>City</span><input type="text" value="Bengaluru" /></label>
+            <label><span>Payment method</span>
+              <select>
+                <option>UPI</option>
+                <option>Card</option>
+                <option>Wallet</option>
+              </select>
+            </label>
+            <button class="btn" type="submit">Place order</button>
+          </form>
+        </section>
+
+        <aside class="panel">
+          <h2>Summary</h2>
+          <div class="row"><span>Noise Headphones</span><strong>₹2,999</strong></div>
+          <div class="row"><span>Fitness Watch</span><strong>₹9,998</strong></div>
+          <div class="row"><span>Delivery</span><strong>₹149</strong></div>
+          <div class="row"><span>Total</span><strong>₹13,146</strong></div>
+        </aside>
+      </main>
+    </div>
+
+    <script>
+      const API_BASE = 'http://localhost:5000/api';
+
+      async function loadCheckoutSummary() {
+        const token = localStorage.getItem('watchcart_token');
+        if (!token) {
+          alert('Please login before checkout.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/cart`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const result = await response.json();
+          const cart = result.data || { subtotal: 0, deliveryCharge: 0, total: 0, items: [] };
+
+          const summaryElements = document.querySelectorAll('.row strong');
+          summaryElements[0].textContent = `₹${(cart.items[0]?.price || 0).toLocaleString('en-IN')}`;
+          summaryElements[1].textContent = `₹${((cart.subtotal || 0) - (cart.items[0]?.price || 0)).toLocaleString('en-IN')}`;
+          summaryElements[2].textContent = `₹${(cart.deliveryCharge || 0).toLocaleString('en-IN')}`;
+          summaryElements[3].textContent = `₹${(cart.total || 0).toLocaleString('en-IN')}`;
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      document.getElementById('checkoutForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const token = localStorage.getItem('watchcart_token');
+        if (!token) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const form = event.target;
+        const address = form.querySelector('textarea').value;
+        const paymentMethod = form.querySelector('select').value;
+
+        try {
+          const response = await fetch(`${API_BASE}/orders`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ deliveryAddress: address, paymentMethod })
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            alert('Order placed successfully!');
+            window.location.href = 'orders.html';
+            return;
+          }
+
+          alert(result.message || 'Unable to place order.');
+        } catch (error) {
+          alert('Unable to connect to the backend to place the order.');
+        }
+      });
+
+      loadCheckoutSummary();
+    </script>
+  </body>
+</html>

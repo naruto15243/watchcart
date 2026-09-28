@@ -2,10 +2,13 @@
   "name": "watchcart",
   "version": "1.0.0",
   "description": "Shopping + price comparison + entertainment + food ordering platform",
-  "main": "server/server.js",
+  "main": "backend/server.js",
+  "engines": {
+    "node": ">=18.15.0"
+  },
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
