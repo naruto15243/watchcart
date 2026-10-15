@@ -14,42 +14,50 @@ const {
 
 const seedDatabase = async (req, res) => {
   try {
-    await Product.deleteMany({});
-    await Store.deleteMany({});
-    await ProductPrice.deleteMany({});
-    await Movie.deleteMany({});
-    await Restaurant.deleteMany({});
-    await FoodItem.deleteMany({});
+    for (const product of sampleProducts) {
+      await Product.updateOne({ name: product.name }, { $set: product }, { upsert: true });
+    }
+    for (const store of sampleStores) {
+      await Store.updateOne({ name: store.name }, { $set: store }, { upsert: true });
+    }
 
-    const createdProducts = await Product.insertMany(sampleProducts);
-    const createdStores = await Store.insertMany(sampleStores);
+    const createdProducts = await Product.find({ name: { $in: sampleProducts.map((product) => product.name) } });
+    const createdStores = await Store.find({ name: { $in: sampleStores.map((store) => store.name) } });
 
     for (const product of createdProducts) {
       for (const store of createdStores) {
-        const basePrice = product.category === 'Laptops' ? 49999 : product.category === 'Mobiles' ? 39999 : 2499;
-        const priceAdjust = store.name === 'Flipkart' ? 1200 : store.name === 'Croma' ? 700 : 0;
-
-        await ProductPrice.create({
-          productId: product._id,
-          storeId: store._id,
-          price: basePrice + priceAdjust,
-          deliveryDays: store.name === 'Amazon' ? 2 : store.name === 'Flipkart' ? 3 : 2,
-          availability: 'In stock',
-          rating: store.rating,
-          dealUrl: 'https://example.com/deal',
-        });
+        const priceFactor = store.name === 'Flipkart' ? 0.98 : store.name === 'Croma' ? 1.03 : 1;
+        await ProductPrice.updateOne(
+          { productId: product._id, storeId: store._id },
+          {
+            $set: {
+              price: Math.round(product.price * priceFactor),
+              deliveryDays: store.name === 'Flipkart' ? 3 : 2,
+              availability: 'In stock',
+              rating: store.rating,
+              dealUrl: store.website,
+            },
+          },
+          { upsert: true },
+        );
       }
     }
 
-    const createdMovies = await Movie.insertMany(sampleMovies);
-    const createdRestaurants = await Restaurant.insertMany(sampleRestaurants);
+    for (const movie of sampleMovies) {
+      await Movie.updateOne({ title: movie.title }, { $set: movie }, { upsert: true });
+    }
+    for (const restaurant of sampleRestaurants) {
+      await Restaurant.updateOne({ name: restaurant.name }, { $set: restaurant }, { upsert: true });
+    }
+    const createdRestaurants = await Restaurant.find({ name: { $in: sampleRestaurants.map((restaurant) => restaurant.name) } });
 
     for (const restaurant of createdRestaurants) {
       for (const item of sampleFoodItems) {
-        await FoodItem.create({
-          restaurantId: restaurant._id,
-          ...item,
-        });
+        await FoodItem.updateOne(
+          { restaurantId: restaurant._id, name: item.name },
+          { $set: { ...item, restaurantId: restaurant._id } },
+          { upsert: true },
+        );
       }
     }
 
@@ -58,7 +66,7 @@ const seedDatabase = async (req, res) => {
       message: 'Database seeded successfully',
       products: createdProducts.length,
       stores: createdStores.length,
-      movies: createdMovies.length,
+      movies: sampleMovies.length,
       restaurants: createdRestaurants.length,
     });
   } catch (error) {

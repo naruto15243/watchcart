@@ -48,6 +48,12 @@
           <a href="payment.html">Payment</a>
           <a href="login.html">Login</a>
           <a href="profile.html">Profile</a>
+          <a href="search.html">Search</a>
+          <a href="compare.html">Compare</a>
+          <a href="stores.html">Stores</a>
+          <a href="offers.html">Offers</a>
+          <a href="wishlist.html">Wishlist</a>
+          <a href="checkout.html">Checkout</a>
         </nav>
       </header>
 
@@ -69,7 +75,7 @@
 
           document.getElementById('productGrid').innerHTML = products.map((product) => `
             <article class="card">
-              <img src="${product.image || 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=800&q=80'}" alt="${product.name}" />
+              <img src="${product.images?.[0] || 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?auto=format&fit=crop&w=800&q=80'}" alt="${product.name}" />
               <div class="content">
                 <div class="meta"><span>${product.category || 'General'}</span><span>${product.brand || 'WatchCart'}</span></div>
                 <h3>${product.name}</h3>
@@ -78,7 +84,10 @@
                   <strong>${Number(product.rating || 4.5).toFixed(1)} ★</strong>
                   <span>${formatCurrency(product.price)}</span>
                 </div>
-                <div class="footer"><button class="btn" type="button" data-product-id="${product._id}" data-name="${product.name}" data-price="${product.price}">Add to cart</button></div>
+                <div class="footer">
+                  <button class="btn" type="button" data-product-id="${product._id}" data-name="${product.name}" data-price="${product.price}">Add to cart</button>
+                  <a href="compare.html?product=${encodeURIComponent(product._id)}">Compare stores</a>
+                </div>
               </div>
             </article>
           `).join('');
@@ -120,5 +129,6 @@
 
       loadProducts();
     </script>
+    <script src="auth-guard.js"></script>
   </body>
 </html>

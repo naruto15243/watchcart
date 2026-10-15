@@ -32,6 +32,7 @@
       input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background: rgba(255,255,255,0.02); color: var(--text); }
       .btn { width:100%; margin-top:8px; border:none; border-radius:999px; padding:0.9rem 1.2rem; font-weight:700; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; }
       .helper { margin-top:16px; text-align:center; color: var(--muted); }
+      #nameField[hidden] { display:none; }
       @media (max-width:768px){ .topbar { display:grid; grid-template-columns:1fr; gap:12px; } }
     </style>
   </head>
@@ -47,57 +48,95 @@
           <a href="payment.html">Payment</a>
           <a href="login.html" class="active">Login</a>
           <a href="profile.html">Profile</a>
+          <a href="search.html">Search</a>
+          <a href="compare.html">Compare</a>
+          <a href="stores.html">Stores</a>
+          <a href="offers.html">Offers</a>
+          <a href="wishlist.html">Wishlist</a>
+          <a href="checkout.html">Checkout</a>
         </nav>
       </header>
 
       <main class="page">
         <section class="panel">
-          <h1>Welcome back</h1>
+          <h1 id="formTitle">Welcome back</h1>
           <form id="loginForm">
+            <label id="nameField" hidden>
+              <span>Name</span>
+              <input type="text" autocomplete="name" />
+            </label>
             <label>
               <span>Email</span>
-              <input type="email" value="user@watchcart.com" />
+              <input type="email" autocomplete="email" required />
             </label>
             <label>
               <span>Password</span>
-              <input type="password" value="password123" />
+              <input type="password" autocomplete="current-password" required />
             </label>
-            <button class="btn" type="submit">Login</button>
+            <button class="btn" id="submitButton" type="submit">Login</button>
           </form>
-          <div class="helper">New here? <a href="profile.html">Create account</a></div>
+          <div class="helper"><span id="helperText">New here?</span> <a href="#" id="modeToggle">Create account</a></div>
         </section>
       </main>
     </div>
 
     <script>
       const API_BASE = 'http://localhost:5000/api';
+      let isRegisterMode = false;
+
+      const nameField = document.querySelector('#nameField');
+      const nameInput = nameField.querySelector('input');
+      const emailInput = document.querySelector('input[type="email"]');
+      const passwordInput = document.querySelector('input[type="password"]');
+      const formTitle = document.getElementById('formTitle');
+      const submitButton = document.getElementById('submitButton');
+      const helperText = document.getElementById('helperText');
+      const modeToggle = document.getElementById('modeToggle');
+
+      modeToggle.addEventListener('click', function (event) {
+        event.preventDefault();
+        isRegisterMode = !isRegisterMode;
+        nameField.hidden = !isRegisterMode;
+        nameInput.required = isRegisterMode;
+        passwordInput.autocomplete = isRegisterMode ? 'new-password' : 'current-password';
+        formTitle.textContent = isRegisterMode ? 'Create your account' : 'Welcome back';
+        submitButton.textContent = isRegisterMode ? 'Create account' : 'Login';
+        helperText.textContent = isRegisterMode ? 'Already have an account?' : 'New here?';
+        modeToggle.textContent = isRegisterMode ? 'Login' : 'Create account';
+      });
 
       document.getElementById('loginForm').addEventListener('submit', async function (event) {
         event.preventDefault();
 
-        const email = document.querySelector('input[type="email"]').value;
-        const password = document.querySelector('input[type="password"]').value;
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const endpoint = isRegisterMode ? 'register' : 'login';
+        const payload = isRegisterMode
+          ? { name: nameInput.value, email, password }
+          : { email, password };
 
         try {
-          const response = await fetch(`${API_BASE}/auth/login`, {
+          const response = await fetch(`${API_BASE}/auth/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(payload)
           });
 
           const result = await response.json();
           if (!result.success) {
-            alert(result.message || 'Login failed');
+            alert(result.message || (isRegisterMode ? 'Account creation failed' : 'Login failed'));
             return;
           }
 
           localStorage.setItem('watchcart_token', result.token);
-          alert('Login successful. Redirecting to your profile page.');
-          window.location.href = 'profile.html';
+          alert(isRegisterMode ? 'Account created successfully.' : 'Login successful. Opening the product catalog.');
+          sessionStorage.removeItem('watchcart_return_to');
+          window.location.href = 'products.html';
         } catch (error) {
           alert('Unable to connect to the backend right now.');
         }
       });
     </script>
+    <script src="auth-guard.js"></script>
   </body>
 </html>

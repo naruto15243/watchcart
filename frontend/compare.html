@@ -16,13 +16,20 @@
       .nav { display:flex; gap:18px; flex-wrap:wrap; color: var(--muted); }
       .nav a.active { color: var(--text); }
       .page { padding-top:28px; }
-      .cards { display:grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap:18px; }
-      .card { background: var(--panel); border:1px solid var(--border); border-radius:20px; padding:18px; }
-      .card h3 { margin-top:0; }
-      .specs { display:grid; gap:10px; margin-top:18px; }
-      .spec { display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-bottom:1px solid var(--border); }
-      .price { color: var(--primary-2); font-weight:700; }
-      @media (max-width:768px){ .topbar{display:grid; grid-template-columns:1fr; gap:12px;} .cards{grid-template-columns:1fr;} }
+      .compare-controls { display:flex; align-items:end; gap:14px; flex-wrap:wrap; margin:22px 0; }
+      .compare-controls label { display:grid; gap:8px; min-width:min(100%, 320px); color:var(--muted); }
+      .compare-controls select { min-height:44px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:#102337; color:var(--text); }
+      .compare-controls button { min-height:44px; padding:0 18px; border:0; border-radius:8px; background:linear-gradient(135deg, var(--primary), var(--primary-2)); color:white; font-weight:700; cursor:pointer; }
+      .summary { margin:18px 0; color:var(--muted); }
+      .table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:10px; background:var(--panel); }
+      table { width:100%; border-collapse:collapse; min-width:640px; text-align:left; }
+      th, td { padding:14px 16px; border-bottom:1px solid var(--border); }
+      th { color:var(--muted); font-size:0.85rem; font-weight:600; }
+      tbody tr:last-child td { border-bottom:0; }
+      .best-price { color:#57dfaa; font-weight:700; }
+      .deal-link { text-decoration:underline; text-underline-offset:3px; }
+      .status { min-height:24px; color:var(--muted); }
+      @media (max-width:768px){ .topbar{display:grid; grid-template-columns:1fr; gap:12px;} }
     </style>
   </head>
   <body>
@@ -36,46 +43,118 @@
           <a href="cart.html">Cart</a>
           <a href="orders.html">Orders</a>
           <a href="payment.html">Payment</a>
+          <a href="search.html">Search</a>
+          <a href="stores.html">Stores</a>
+          <a href="offers.html">Offers</a>
+          <a href="wishlist.html">Wishlist</a>
+          <a href="checkout.html">Checkout</a>
+          <a href="login.html">Login</a>
+          <a href="profile.html">Profile</a>
         </nav>
       </header>
 
       <main class="page">
         <h2>Compare products</h2>
-        <div class="cards">
-          <article class="card">
-            <h3>Noise Master Headphones</h3>
-            <div class="price">₹2,999</div>
-            <div class="specs">
-              <div class="spec"><span>Battery</span><strong>35 hrs</strong></div>
-              <div class="spec"><span>Weight</span><strong>250 g</strong></div>
-              <div class="spec"><span>Connectivity</span><strong>Bluetooth 5.3</strong></div>
-              <div class="spec"><span>Noise cancel</span><strong>Hybrid</strong></div>
-            </div>
-          </article>
-
-          <article class="card">
-            <h3>Smart Fitness Watch</h3>
-            <div class="price">₹4,999</div>
-            <div class="specs">
-              <div class="spec"><span>Battery</span><strong>7 days</strong></div>
-              <div class="spec"><span>Display</span><strong>1.7 inch</strong></div>
-              <div class="spec"><span>Connectivity</span><strong>Bluetooth</strong></div>
-              <div class="spec"><span>Tracking</span><strong>GPS + HR</strong></div>
-            </div>
-          </article>
-
-          <article class="card">
-            <h3>Acer Swift Laptop</h3>
-            <div class="price">₹57,999</div>
-            <div class="specs">
-              <div class="spec"><span>Processor</span><strong>Intel i5</strong></div>
-              <div class="spec"><span>RAM</span><strong>16 GB</strong></div>
-              <div class="spec"><span>Storage</span><strong>512 GB SSD</strong></div>
-              <div class="spec"><span>Display</span><strong>14 inch</strong></div>
-            </div>
-          </article>
+        <div class="compare-controls">
+          <label for="productSelect">Select a product to compare store prices</label>
+          <select id="productSelect" aria-label="Product to compare"></select>
+          <button id="compareButton" type="button">Compare prices</button>
+        </div>
+        <p class="status" id="compareStatus" role="status" aria-live="polite"></p>
+        <p class="summary" id="compareSummary"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Store</th><th>Price</th><th>Delivery</th><th>Store rating</th><th>Availability</th><th>Deal</th></tr>
+            </thead>
+            <tbody id="comparisonRows"></tbody>
+          </table>
         </div>
       </main>
+    <script>
+      const API_BASE = 'http://localhost:5000/api';
+      const productSelect = document.getElementById('productSelect');
+      const comparisonRows = document.getElementById('comparisonRows');
+      const compareSummary = document.getElementById('compareSummary');
+      const compareStatus = document.getElementById('compareStatus');
+      const formatCurrency = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0);
+
+      async function loadProducts() {
+        compareStatus.textContent = 'Loading products...';
+        try {
+          const response = await fetch(`${API_BASE}/products`);
+          const result = await response.json();
+          if (!response.ok || !result.success || !result.data?.length) throw new Error('No products are available.');
+
+          productSelect.replaceChildren(...result.data.map((product) => new Option(product.name, product._id)));
+          const requestedProduct = new URLSearchParams(window.location.search).get('product');
+          if (requestedProduct && result.data.some((product) => product._id === requestedProduct)) {
+            productSelect.value = requestedProduct;
+          }
+          compareStatus.textContent = '';
+          await compareSelectedProduct();
+        } catch (error) {
+          compareStatus.textContent = error.message || 'Unable to load products. Check that the backend is running.';
+        }
+      }
+
+      async function compareSelectedProduct() {
+        if (!productSelect.value) return;
+        compareStatus.textContent = 'Loading store prices...';
+        comparisonRows.replaceChildren();
+        compareSummary.textContent = '';
+
+        try {
+          const response = await fetch(`${API_BASE}/compare/${encodeURIComponent(productSelect.value)}`);
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.message || 'No store prices are available for this product.');
+
+          const comparison = result.data;
+          const stores = [...comparison.stores].sort((left, right) => left.price - right.price);
+          compareSummary.textContent = `${comparison.product.name}: lowest ${formatCurrency(comparison.lowestPrice)} · highest ${formatCurrency(comparison.highestPrice)} · save up to ${formatCurrency(comparison.priceDifference)} by choosing the lowest price.`;
+
+          for (const [index, store] of stores.entries()) {
+            const row = document.createElement('tr');
+            const values = [
+              store.store,
+              formatCurrency(store.price),
+              store.delivery,
+              `${Number(store.rating || 0).toFixed(1)} / 5`,
+              store.availability,
+            ];
+            for (const [columnIndex, value] of values.entries()) {
+              const cell = document.createElement('td');
+              cell.textContent = value;
+              if (index === 0 && columnIndex === 1) cell.className = 'best-price';
+              row.appendChild(cell);
+            }
+
+            const dealCell = document.createElement('td');
+            if (store.dealUrl) {
+              const link = document.createElement('a');
+              link.href = store.dealUrl;
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+              link.className = 'deal-link';
+              link.textContent = 'Visit store';
+              dealCell.appendChild(link);
+            } else {
+              dealCell.textContent = 'Not available';
+            }
+            row.appendChild(dealCell);
+            comparisonRows.appendChild(row);
+          }
+          compareStatus.textContent = '';
+        } catch (error) {
+          compareStatus.textContent = error.message || 'Unable to compare store prices.';
+        }
+      }
+
+      document.getElementById('compareButton').addEventListener('click', compareSelectedProduct);
+      productSelect.addEventListener('change', compareSelectedProduct);
+      loadProducts();
+    </script>
     </div>
+    <script src="auth-guard.js"></script>
   </body>
 </html>

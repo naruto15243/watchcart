@@ -99,6 +99,18 @@ Then visit:
 http://localhost:4173
 ```
 
+The project root page opens the login screen at `frontend/login.html`. After login or registration, users are redirected to the product catalog.
+
+## Load demo catalog
+
+After starting the backend and connecting MongoDB, seed the demo products, stores, and comparison prices with:
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:5000/api/seed -Method Post
+```
+
+The seed operation updates matching demo records and can be run again without deleting existing collections.
+
 ## API Notes
 
 The backend exposes REST APIs under `/api`, including:

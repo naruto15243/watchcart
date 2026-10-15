@@ -4,10 +4,24 @@ const ProductPrice = require('../models/ProductPrice');
 const getProducts = async (req, res) => {
   try {
     const products = await Product.find();
+    const prices = await ProductPrice.find({ productId: { $in: products.map((product) => product._id) } }).sort({ price: 1 });
+    const lowestPriceByProduct = new Map();
+
+    for (const price of prices) {
+      const productId = String(price.productId);
+      if (!lowestPriceByProduct.has(productId)) {
+        lowestPriceByProduct.set(productId, price.price);
+      }
+    }
+
+    const productsWithPrice = products.map((product) => ({
+      ...product.toObject(),
+      price: lowestPriceByProduct.get(String(product._id)) ?? product.price,
+    }));
     res.status(200).json({
       success: true,
       count: products.length,
-      data: products,
+      data: productsWithPrice,
     });
   } catch (error) {
     res.status(500).json({
